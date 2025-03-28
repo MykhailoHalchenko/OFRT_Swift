@@ -2,7 +2,7 @@ import UIKit
 import SwiftUI
 
 protocol ScreenTimeoutDelegate: AnyObject {
-    func screenTimeoutDidOccur()
+    func screenTimeoutDidOccur(in language: Localization.Language)
 }
 
 class ScreenTimeoutManager {
@@ -38,7 +38,10 @@ class ScreenTimeoutManager {
         )
     }
     
-    func startTracking(duration: TimeInterval? = nil, delegate: ScreenTimeoutDelegate? = nil) {
+    func startTracking(
+        duration: TimeInterval? = nil,
+        delegate: ScreenTimeoutDelegate? = nil
+    ) {
         guard !isTracking else { return }
         
         if let duration = duration {
@@ -91,7 +94,7 @@ class ScreenTimeoutManager {
     private func handleInactivity() {
         DispatchQueue.main.async { [weak self] in
             UIApplication.shared.isIdleTimerDisabled = false
-            self?.delegate?.screenTimeoutDidOccur()
+            self?.delegate?.screenTimeoutDidOccur(in: .ukrainian)
         }
         
         stopTracking()
@@ -126,15 +129,15 @@ class ExampleViewController: UIViewController, ScreenTimeoutDelegate {
         )
     }
     
-    func screenTimeoutDidOccur() {
+    func screenTimeoutDidOccur(in language: Localization.Language) {
         let alertController = UIAlertController(
-            title: "Увага",
-            message: "Час очікування вичерпано",
+            title: Localization.ScreenTimeout.title(for: language),
+            message: Localization.ScreenTimeout.message(for: language),
             preferredStyle: .alert
         )
         
         let okAction = UIAlertAction(
-            title: "ОК",
+            title: Localization.ScreenTimeout.okButton(for: language),
             style: .default
         ) { [weak self] _ in
             self?.dismiss(animated: true)

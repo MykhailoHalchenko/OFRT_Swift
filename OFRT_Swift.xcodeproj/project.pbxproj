@@ -15,6 +15,7 @@
 		493912A92D966ABB004BD81A /* OFRT_SwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493912A82D966ABB004BD81A /* OFRT_SwiftUITests.swift */; };
 		493912AB2D966ABB004BD81A /* OFRT_SwiftUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493912AA2D966ABB004BD81A /* OFRT_SwiftUITestsLaunchTests.swift */; };
 		493912B82D966B5C004BD81A /* ScreenTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493912B72D966B5B004BD81A /* ScreenTimeoutManager.swift */; };
+		493912BA2D967338004BD81A /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493912B92D967338004BD81A /* LocalizationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		493912A82D966ABB004BD81A /* OFRT_SwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFRT_SwiftUITests.swift; sourceTree = "<group>"; };
 		493912AA2D966ABB004BD81A /* OFRT_SwiftUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFRT_SwiftUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		493912B72D966B5B004BD81A /* ScreenTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTimeoutManager.swift; sourceTree = "<group>"; };
+		493912B92D967338004BD81A /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +78,7 @@
 		493912812D966AB6004BD81A = {
 			isa = PBXGroup;
 			children = (
+				493912B92D967338004BD81A /* LocalizationManager.swift */,
 				493912B72D966B5B004BD81A /* ScreenTimeoutManager.swift */,
 				4939128C2D966AB6004BD81A /* OFRT_Swift */,
 				4939129D2D966ABB004BD81A /* OFRT_SwiftTests */,
@@ -260,6 +263,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				493912BA2D967338004BD81A /* LocalizationManager.swift in Sources */,
 				493912902D966AB6004BD81A /* ContentView.swift in Sources */,
 				4939128E2D966AB6004BD81A /* OFRT_SwiftApp.swift in Sources */,
 				493912B82D966B5C004BD81A /* ScreenTimeoutManager.swift in Sources */,
