@@ -1,35 +1,17 @@
 import Foundation
 
-enum Localization {
+struct LocalizationManager {
     enum ScreenTimeout {
-        static func title(for language: Language) -> String {
-            switch language {
-            case .ukrainian: return "Увага"
-            case .english: return "Attention"
-            case .russian: return "Внимание"
-            }
+        static func title() -> String {
+            NSLocalizedString("ScreenTimeout.Title", comment: "Alert title for screen timeout")
         }
         
-        static func message(for language: Language) -> String {
-            switch language {
-            case .ukrainian: return "Час очікування вичерпано"
-            case .english: return "Timeout has expired"
-            case .russian: return "Время ожидания истекло"
-            }
+        static func message() -> String {
+            NSLocalizedString("ScreenTimeout.Message", comment: "Alert message for screen timeout")
         }
         
-        static func okButton(for language: Language) -> String {
-            switch language {
-            case .ukrainian: return "ОК"
-            case .english: return "OK"
-            case .russian: return "ОК"
-            }
+        static func okButton() -> String {
+            NSLocalizedString("ScreenTimeout.OKButton", comment: "OK button for screen timeout alert")
         }
-    }
-    
-    enum Language {
-        case ukrainian
-        case english
-        case russian
     }
 }

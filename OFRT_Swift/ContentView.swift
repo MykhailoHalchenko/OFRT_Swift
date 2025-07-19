@@ -1,26 +1,52 @@
 import SwiftUI
 
-class ContentViewModel: ObservableObject, ScreenTimeoutDelegate {
+class ContentViewModel: ObservableObject {
     @Published var isTracking = false
     @Published var remainingTime: TimeInterval = 120
+    @Published var showTimeoutAlert = false
+    private var countdownTimer: Timer?
+    
+    init() {
+        setupNotifications()
+    }
+    
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: .screenTimeoutDidOccur,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleTimeout()
+        }
+    }
     
     func startTracking() {
-        ScreenTimeoutManager.shared.startTracking(
-            duration: remainingTime,
-            delegate: self
-        )
+        guard !isTracking else { return }
+        ScreenTimeoutManager.shared.startTracking(duration: remainingTime)
         isTracking = true
+        countdownTimer?.invalidate()
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.remainingTime = max(0, self.remainingTime - 1)
+            if self.remainingTime == 0 {
+                self.countdownTimer?.invalidate()
+            }
+        }
     }
     
     func stopTracking() {
         ScreenTimeoutManager.shared.stopTracking()
+        countdownTimer?.invalidate()
         isTracking = false
+        remainingTime = 120
     }
     
-    func screenTimeoutDidOccur(in language: Localization.Language) {
+    private func handleTimeout() {
         DispatchQueue.main.async { [weak self] in
             self?.isTracking = false
             self?.remainingTime = 120
+            self?.countdownTimer?.invalidate()
+            self?.showTimeoutAlert = true
         }
     }
     
@@ -29,6 +55,10 @@ class ContentViewModel: ObservableObject, ScreenTimeoutDelegate {
         let seconds = Int(timeInterval) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 struct ContentView: View {
@@ -36,7 +66,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Screen Timeout Demo")
+            Text(LocalizationManager.ScreenTimeout.title())
                 .font(.title)
                 .fontWeight(.bold)
             
@@ -64,8 +94,12 @@ struct ContentView: View {
                 .disabled(!viewModel.isTracking)
             }
         }
-        .onAppear {
-            ScreenTimeoutManager.shared.delegate = viewModel
+        .alert(isPresented: $viewModel.showTimeoutAlert) {
+            Alert(
+                title: Text(LocalizationManager.ScreenTimeout.title()),
+                message: Text(LocalizationManager.ScreenTimeout.message()),
+                dismissButton: .default(Text(LocalizationManager.ScreenTimeout.okButton()))
+            )
         }
     }
 }

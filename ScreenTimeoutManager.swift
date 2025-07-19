@@ -1,18 +1,11 @@
 import UIKit
-import SwiftUI
-
-protocol ScreenTimeoutDelegate: AnyObject {
-    func screenTimeoutDidOccur(in language: Localization.Language)
-}
+import os.log
 
 class ScreenTimeoutManager {
     static let shared = ScreenTimeoutManager()
     
-    weak var delegate: ScreenTimeoutDelegate?
-    
     private var inactivityTimer: Timer?
     private var backgroundTimer: Timer?
-    
     private(set) var isTracking = false
     private(set) var timeoutDuration: TimeInterval = 300
     
@@ -32,29 +25,35 @@ class ScreenTimeoutManager {
         
         notificationCenter.addObserver(
             self,
+            selector: #selector(pauseBackgroundTimer),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        
+        notificationCenter.addObserver(
+            self,
             selector: #selector(resetTimer),
             name: UIDevice.proximityStateDidChangeNotification,
             object: nil
         )
     }
     
-    func startTracking(
-        duration: TimeInterval? = nil,
-        delegate: ScreenTimeoutDelegate? = nil
-    ) {
-        guard !isTracking else { return }
+    func startTracking(duration: TimeInterval? = nil) {
+        guard !isTracking else {
+            os_log(.info, "ScreenTimeoutManager: Already tracking, ignoring start request")
+            return
+        }
         
         if let duration = duration {
             timeoutDuration = max(30, min(duration, 1800))
         }
-        
-        self.delegate = delegate
         
         startInactivityTimer()
         startBackgroundTimer()
         
         isTracking = true
         UIApplication.shared.isIdleTimerDisabled = true
+        os_log(.info, "ScreenTimeoutManager: Started tracking with duration %.0f seconds", timeoutDuration)
     }
     
     private func startInactivityTimer() {
@@ -80,28 +79,35 @@ class ScreenTimeoutManager {
     private func checkBackgroundState() {
         guard isTracking else { return }
         
-        let state = UIApplication.shared.applicationState
-        switch state {
+        switch UIApplication.shared.applicationState {
         case .background, .inactive:
             handleInactivity()
         case .active:
             resetTimer()
         @unknown default:
-            break
+            os_log(.error, "ScreenTimeoutManager: Unknown application state")
         }
     }
     
     private func handleInactivity() {
         DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
             UIApplication.shared.isIdleTimerDisabled = false
-            self?.delegate?.screenTimeoutDidOccur(in: .ukrainian)
+            NotificationCenter.default.post(name: .screenTimeoutDidOccur, object: nil)
+            self.stopTracking()
+            os_log(.info, "ScreenTimeoutManager: Timeout occurred")
         }
-        
-        stopTracking()
     }
     
     @objc private func resetTimer() {
+        guard isTracking else { return }
         startInactivityTimer()
+        os_log(.info, "ScreenTimeoutManager: Timer reset")
+    }
+    
+    @objc private func pauseBackgroundTimer() {
+        backgroundTimer?.invalidate()
+        os_log(.info, "ScreenTimeoutManager: Background timer paused")
     }
     
     func stopTracking() {
@@ -111,39 +117,17 @@ class ScreenTimeoutManager {
         backgroundTimer?.invalidate()
         isTracking = false
         UIApplication.shared.isIdleTimerDisabled = false
+        os_log(.info, "ScreenTimeoutManager: Stopped tracking")
     }
     
     deinit {
         stopTracking()
         NotificationCenter.default.removeObserver(self)
+        os_log(.info, "ScreenTimeoutManager: Deinitialized")
     }
 }
 
-class ExampleViewController: UIViewController, ScreenTimeoutDelegate {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        ScreenTimeoutManager.shared.startTracking(
-            duration: 120,
-            delegate: self
-        )
-    }
-    
-    func screenTimeoutDidOccur(in language: Localization.Language) {
-        let alertController = UIAlertController(
-            title: Localization.ScreenTimeout.title(for: language),
-            message: Localization.ScreenTimeout.message(for: language),
-            preferredStyle: .alert
-        )
-        
-        let okAction = UIAlertAction(
-            title: Localization.ScreenTimeout.okButton(for: language),
-            style: .default
-        ) { [weak self] _ in
-            self?.dismiss(animated: true)
-        }
-        
-        alertController.addAction(okAction)
-        present(alertController, animated: true)
-    }
+// Расширение для имени уведомления
+extension Notification.Name {
+    static let screenTimeoutDidOccur = Notification.Name("ScreenTimeoutDidOccur")
 }
